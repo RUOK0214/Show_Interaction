@@ -1,15 +1,12 @@
 package io.github.ruok0214.showinteraction;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 import java.util.Locale;
-import java.util.function.DoubleConsumer;
-import java.util.function.DoubleFunction;
 
 public final class InteractionSettingsScreen extends Screen {
     private static final int PANEL_HEIGHT = 226;
@@ -44,9 +41,11 @@ public final class InteractionSettingsScreen extends Screen {
                 value -> draft.transparencyPercent = (int) value));
         transparency.setTooltip(Tooltip.create(Component.translatable("screen.show_interaction.transparency_hint")));
 
-        int toggleWidth = 62;
+        int toggleWidth = 40;
         int toggleX = left + 108;
         int sliderX = toggleX + toggleWidth + 6;
+        int appearanceX = left + panelWidth - 112;
+        int logX = left + panelWidth - 56;
         for (var action : HighlightHistory.Action.values()) {
             int rowY = top + 82 + action.ordinal() * 23;
             var reaction = draft.reactions.get(action);
@@ -55,17 +54,30 @@ public final class InteractionSettingsScreen extends Screen {
                 button.setMessage(stateLabel(reaction.enabled));
             }).bounds(toggleX, rowY, toggleWidth, 20).build());
             toggle.setTooltip(Tooltip.create(actionLabel(action)));
-            var duration = addRenderableWidget(new SettingSlider(sliderX, rowY, left + panelWidth - 10 - sliderX,
+            var duration = addRenderableWidget(new SettingSlider(sliderX, rowY, appearanceX - sliderX - 6,
                     0.5, 10, 0.5, reaction.durationSeconds,
                     value -> Component.translatable("screen.show_interaction.seconds", String.format(Locale.ROOT, "%.1f", value)),
                     value -> reaction.durationSeconds = value));
             duration.setTooltip(Tooltip.create(Component.translatable(action == HighlightHistory.Action.OPEN
                     ? "screen.show_interaction.open_duration_hint" : "screen.show_interaction.duration_hint")));
+            var appearance = addRenderableWidget(Button.builder(Component.translatable("screen.show_interaction.appearance"),
+                    button -> minecraft.gui.setScreen(new ReactionAppearanceScreen(this, draft, action)))
+                    .bounds(appearanceX, rowY, 52, 20).build());
+            appearance.setTooltip(Tooltip.create(Component.translatable("screen.show_interaction.appearance_title", actionLabel(action))));
+            var logging = addRenderableWidget(Button.builder(stateLabel(reaction.logEnabled), button -> {
+                reaction.logEnabled = !reaction.logEnabled;
+                button.setMessage(stateLabel(reaction.logEnabled));
+            }).bounds(logX, rowY, 46, 20).build());
+            logging.setTooltip(Tooltip.create(Component.translatable("screen.show_interaction.log_toggle_hint", actionLabel(action))));
         }
+        int footerWidth = (innerWidth - 12) / 3;
         addRenderableWidget(Button.builder(Component.translatable("screen.show_interaction.save"), button -> save())
-                .bounds(left + 10, top + 202, halfWidth, 20).build());
+                .bounds(left + 10, top + 202, footerWidth, 20).build());
+        addRenderableWidget(Button.builder(Component.translatable("screen.show_interaction.log_view"),
+                button -> minecraft.gui.setScreen(ShowInteractionClient.createLogScreen(this)))
+                .bounds(left + 16 + footerWidth, top + 202, footerWidth, 20).build());
         addRenderableWidget(Button.builder(Component.translatable("gui.cancel"), button -> onClose())
-                .bounds(left + 16 + halfWidth, top + 202, innerWidth - halfWidth - 6, 20).build());
+                .bounds(left + 22 + footerWidth * 2, top + 202, innerWidth - footerWidth * 2 - 12, 20).build());
     }
 
     private void save() {
@@ -94,12 +106,15 @@ public final class InteractionSettingsScreen extends Screen {
         graphics.centeredText(font, Component.translatable(saveFailed ? "screen.show_interaction.save_failed"
                 : "screen.show_interaction.save_hint"), width / 2, top + 51, saveFailed ? 0xFFFF7777 : 0xFFB8C5D6);
         graphics.text(font, Component.translatable("screen.show_interaction.reaction"), left + 10, top + 68, 0xFFB8C5D6);
-        graphics.centeredText(font, Component.translatable("screen.show_interaction.enabled"), left + 139, top + 68, 0xFFB8C5D6);
+        graphics.centeredText(font, Component.translatable("screen.show_interaction.enabled"), left + 128, top + 68, 0xFFB8C5D6);
         graphics.centeredText(font, Component.translatable("screen.show_interaction.duration"),
-                (left + 176 + left + panelWidth - 10) / 2, top + 68, 0xFFB8C5D6);
+                (left + 154 + left + panelWidth - 118) / 2, top + 68, 0xFFB8C5D6);
+        graphics.centeredText(font, Component.translatable("screen.show_interaction.log_record"), left + panelWidth - 33, top + 68, 0xFFB8C5D6);
         for (var action : HighlightHistory.Action.values()) {
-            graphics.text(font, actionLabel(action), left + 10, top + 88 + action.ordinal() * 23,
-                    0xFF000000 | config.color(action));
+            int y = top + 88 + action.ordinal() * 23;
+            graphics.fill(left + 10, y, left + 17, y + 8, 0xFF000000 | draft.color(action));
+            graphics.outline(left + 9, y - 1, 9, 10, 0xFFB8C5D6);
+            graphics.text(font, actionLabel(action), left + 22, y, 0xFFFFFFFF);
         }
     }
 
@@ -109,29 +124,8 @@ public final class InteractionSettingsScreen extends Screen {
     private static Component stateLabel(boolean enabled) {
         return Component.translatable(enabled ? "options.on" : "options.off");
     }
-    private static Component actionLabel(HighlightHistory.Action action) {
+    static Component actionLabel(HighlightHistory.Action action) {
         return Component.translatable("screen.show_interaction.action." + action.name().toLowerCase(Locale.ROOT));
     }
 
-    private static final class SettingSlider extends AbstractSliderButton {
-        private final double minimum, maximum, step;
-        private final DoubleFunction<Component> label;
-        private final DoubleConsumer changed;
-
-        SettingSlider(int x, int y, int width, double minimum, double maximum, double step, double initial,
-                      DoubleFunction<Component> label, DoubleConsumer changed) {
-            super(x, y, width, 20, Component.empty(), (initial - minimum) / (maximum - minimum));
-            this.minimum = minimum;
-            this.maximum = maximum;
-            this.step = step;
-            this.label = label;
-            this.changed = changed;
-            updateMessage();
-        }
-        private double settingValue() {
-            return Math.clamp(minimum + Math.round(value * (maximum - minimum) / step) * step, minimum, maximum);
-        }
-        @Override protected void updateMessage() { setMessage(label.apply(settingValue())); }
-        @Override protected void applyValue() { changed.accept(settingValue()); }
-    }
 }

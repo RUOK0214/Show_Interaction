@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0 — Unreleased
+
+- Configure line width and color separately for each of the five reactions from the settings screen.
+- Add line widths from 1 to 15 in 0.5 steps, RGB sliders, hex color input, a preview and per-reaction appearance reset.
+- Preserve draft edits while moving between settings screens; cancel without changing the saved configuration.
+- Migrate the legacy global width and action colors without losing visibility or duration settings.
+- Check independent appearance, invalid values, JSON migration and save/reload behavior.
+- Add a newest-first interaction log with timestamps, selectable details, block coordinates, world/dimension and before/after properties.
+- Control logging independently for each reaction, including while highlights are disabled.
+- Retain the latest 1,000 events locally across restarts with background writes and corrupt-file recovery.
+- Mark reverted placement/removal predictions on the corresponding log entry.
+
 ## 0.2.1 — First public release · 2026-10-29
 
 - Add MIT license and copyright notice for RUOK0214.

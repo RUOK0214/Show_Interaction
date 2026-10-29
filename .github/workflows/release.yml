@@ -46,10 +46,7 @@ jobs:
           set -euo pipefail
           mkdir -p build/release
           cp "build/libs/show-interaction-$VERSION.jar" build/release/
-          cp "build/libs/show-interaction-$VERSION-sources.jar" build/release/
-          cp "build/distributions/show-interaction-$VERSION-distribution.zip" build/release/
-          cp "build/distributions/show-interaction-$VERSION-distribution.zip.sha256" build/release/
-          (cd build/release && sha256sum *.jar *.zip *.sha256 > SHA256SUMS.txt)
+          (cd build/release && sha256sum *.jar > SHA256SUMS.txt)
           cp "docs/releases/$VERSION.md" build/release/release-notes.md
       - uses: actions/upload-artifact@v4
         with:
@@ -88,15 +85,11 @@ jobs:
               --title "Show Interaction $VERSION — Minecraft 26.2 (Fabric)" \
               --notes-file release-notes.md
           fi
-          gh release upload "$TAG" --clobber \
-            "show-interaction-$VERSION.jar" \
-            "show-interaction-$VERSION-sources.jar" \
-            "show-interaction-$VERSION-distribution.zip" \
-            "show-interaction-$VERSION-distribution.zip.sha256" SHA256SUMS.txt
+          gh release upload "$TAG" --clobber "show-interaction-$VERSION.jar"
           verify_dir=$(mktemp -d)
           gh release download "$TAG" --dir "$verify_dir" --pattern '*'
-          [[ $(find "$verify_dir" -maxdepth 1 -type f | wc -l) -eq 5 ]]
-          cmp SHA256SUMS.txt "$verify_dir/SHA256SUMS.txt"
+          [[ $(find "$verify_dir" -maxdepth 1 -type f | wc -l) -eq 1 ]]
+          cp SHA256SUMS.txt "$verify_dir/SHA256SUMS.txt"
           (cd "$verify_dir" && sha256sum --check SHA256SUMS.txt)
           gh release edit "$TAG" --draft=false --latest --notes-file release-notes.md
           gh release view "$TAG" --json url,isDraft,assets

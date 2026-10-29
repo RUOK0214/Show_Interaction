@@ -51,8 +51,8 @@ java {
 }
 sourceSets {
     modelTest {
-        compileClasspath += sourceSets.main.output
-        runtimeClasspath += sourceSets.main.output
+        compileClasspath += sourceSets.main.output + sourceSets.client.output + sourceSets.client.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.client.output + sourceSets.client.runtimeClasspath
     }
 }
 tasks.register('modelTest', JavaExec) {
