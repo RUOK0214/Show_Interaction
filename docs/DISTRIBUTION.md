@@ -1,9 +1,10 @@
-# 배포 준비 기록
+# GitHub 배포 안내
 
 대상: **Show Interaction 0.2.1 / Minecraft Java 26.2 / Fabric**
 
-현재는 공개 전 준비 단계입니다. GitHub 저장소 공개 전환, GitHub Release, Modrinth/CurseForge 등록,
-태그 푸시 및 다운로드 페이지 게시를 수행하지 않습니다. CI는 비공개 저장소의 빌드 결과만 보관합니다.
+공개 GitHub 저장소의 [Releases](https://github.com/RUOK0214/Show_Interaction/releases)에서 배포합니다.
+일반 빌드와 PR 검사는 파일만 만들며, `v`로 시작하는 버전 태그를 푸시할 때만 별도의 Release 작업이 게시합니다.
+Modrinth/CurseForge에는 게시하지 않습니다.
 
 ## 준비한 정보
 
@@ -25,7 +26,7 @@
 Mod Menu는 포함하지 않습니다. 파일 자체에 제작자·MIT·연락 링크·아이콘을 넣고,
 Mod Menu가 설치되어 있을 때만 해당 설정 진입점을 사용합니다.
 
-## 게시용 소개 초안
+## 소개
 
 ### 한국어
 
@@ -58,12 +59,21 @@ Client-side only; no server installation required.
 
 아이콘은 저장소 루트에서 `java tools/GenerateIcon.java`로 재생성합니다.
 
-## 공개 전에 남은 일
+## 릴리스 절차
 
-- 멀티플레이, 여러 상자 연속 열기 및 다른 렌더링 모드의 미검증 범위를 검토합니다.
-- 플랫폼을 정한 뒤 실제 다운로드/문의 링크를 확정합니다. 현재 GitHub 링크는 비공개 저장소입니다.
-- 선택한 플랫폼에서 요구하는 소개·스크린샷·표시 항목을 확인합니다.
-- 공개 게시 여부는 사용자가 결정합니다. MIT 선택은 게시 또는 저장소 공개의 승인을 의미하지 않습니다.
+1. `gradle.properties`의 버전, 변경 기록, `docs/releases/<버전>.md`를 준비합니다.
+2. 빌드 검사를 통과한 변경을 `main`에 반영합니다.
+3. 해당 커밋에 `v<버전>` 태그를 만들고 푸시합니다. 예: `v0.2.1`.
+4. Release 작업이 태그와 모드 버전 일치, `main`에 포함된 커밋, JAR·ZIP 내용을 검사합니다.
+5. 설치 JAR, 소스 JAR, 배포 ZIP, ZIP 검증값, `SHA256SUMS.txt`를 릴리스 초안에 올립니다.
+6. 업로드 파일을 다시 내려받아 개수와 SHA-256을 확인한 뒤 공개 릴리스로 전환합니다.
+
+일반 Build 작업과 Release의 빌드 단계는 읽기 권한만 사용합니다. 릴리스 게시 단계에만
+저장소 내용 쓰기 권한을 부여하며, 개인 토큰이나 외부 서비스 비밀 키는 필요하지 않습니다.
+이미 공개한 릴리스는 자동 작업이 덮어쓰지 않습니다.
+
+멀티플레이, 여러 상자 연속 열기 및 렌더링 모드 조합 등 미검증 범위는
+[검증 기록](VERIFICATION.md)과 릴리스 안내에 명시합니다.
 
 참고: [Fabric 메타데이터](https://wiki.fabricmc.net/documentation:fabric_mod_json_spec),
 [Mod Menu API](https://github.com/TerraformersMC/ModMenu/blob/v20.0.2/README.md),

@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.1 — Distribution preparation (not published)
+## 0.2.1 — First public release · 2026-10-29
 
 - Add MIT license and copyright notice for RUOK0214.
 - Add the original block-outline icon and project/support links.
@@ -8,6 +8,7 @@
 - Support the optional Mod Menu configuration button, returning to the mod list when closed.
 - Package the install JAR, source JAR, installation notes, license and checksums locally.
 - Verify actual JAR metadata, translations, icon, license and absence of bundled dependencies.
+- Publish versioned GitHub release assets with SHA-256 checksums after build and download verification.
 
 ## 0.2.0 — Settings
 
@@ -24,4 +25,4 @@
 - Keep container highlights visible while open and briefly after closing.
 - Preserve removed block shapes; clear history when changing worlds.
 
-These versions describe development history. No public release has been created.
+0.1.0 and 0.2.0 describe development milestones. 0.2.1 is the first public release and includes those features.

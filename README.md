@@ -3,6 +3,10 @@
 마인크래프트 방송·녹화에서 **방금 건드린 블록의 윤곽을 잠시 반짝이게 하는 클라이언트 전용 모드**입니다.
 중계기 단계를 잘못 바꿨을 때나 여러 상자를 연달아 확인할 때, 시청자가 조작한 위치를 따라올 수 있습니다.
 
+**[다운로드: Show Interaction 0.2.1](https://github.com/RUOK0214/Show_Interaction/releases/tag/v0.2.1)** · [문제 보고](https://github.com/RUOK0214/Show_Interaction/issues) · [MIT 라이선스](LICENSE)
+
+릴리스의 **Assets**에서 `show-interaction-0.2.1.jar`를 받으세요. `Source code`와 `-sources.jar`는 설치용이 아닙니다.
+
 ## 실행 환경 및 설치
 
 - Minecraft **Java Edition 26.2**
@@ -104,7 +108,7 @@ Mod Menu를 함께 테스트하려면 `gradlew.bat runClient -PwithModMenu`를 �
 
 검증을 통과한 파일이 `build/distributions/show-interaction-0.2.1-distribution.zip`으로 생성됩니다.
 설치용 JAR, 사용 안내, 변경 기록, 라이선스, 제3자 고지, 파일별 SHA-256 검증값과 개발용 소스 JAR가 포함됩니다.
-이 작업은 로컬 파일만 준비하며 게시·업로드·릴리스 생성을 하지 않습니다. 현재 공개 배포는 하지 않은 상태입니다.
+이 명령은 로컬 파일만 준비합니다. GitHub 공개 배포는 별도의 [릴리스 절차](docs/DISTRIBUTION.md)를 따릅니다.
 
 ## 라이선스
 
@@ -120,7 +124,7 @@ Gradle Wrapper와 별도 설치하는 의존성은 각자 라이선스를 따릅
 - [문제 보고](https://github.com/RUOK0214/Show_Interaction/issues)
 - [변경 기록](CHANGELOG.md)
 
-현재 저장소는 비공개이므로 링크 접근은 저장소 권한이 있는 사용자로 제한됩니다.
+소스와 배포 파일은 공개 GitHub 저장소에서 제공하며, 문제 보고에는 게임·모드 버전과 재현 방법을 적어 주세요.
 
 ## 범위 및 호환성
 
