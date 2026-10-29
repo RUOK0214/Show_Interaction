@@ -65,7 +65,7 @@ Client-side only; no server installation required.
 2. 빌드 검사를 통과한 변경을 `main`에 반영합니다.
 3. 해당 커밋에 `v<버전>` 태그를 만들고 푸시합니다. 예: `v0.2.1`.
 4. Release 작업이 태그와 모드 버전 일치, `main`에 포함된 커밋, JAR·ZIP 내용을 검사합니다.
-5. 설치 JAR, 소스 JAR, 배포 ZIP, ZIP 검증값, `SHA256SUMS.txt`를 릴리스 초안에 올립니다.
+5. 설치용 JAR 하나만 릴리스 초안에 올립니다. 소스 JAR·배포 ZIP·검증값 파일은 공개 Assets에서 제외하며, SHA-256은 작업 내부에서 검증합니다.
 6. 업로드 파일을 다시 내려받아 개수와 SHA-256을 확인한 뒤 공개 릴리스로 전환합니다.
 
 일반 Build 작업과 Release의 빌드 단계는 읽기 권한만 사용합니다. 릴리스 게시 단계에만

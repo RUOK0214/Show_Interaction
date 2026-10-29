@@ -1,13 +1,13 @@
 # Show Interaction
 
-마인크래프트 방송·녹화에서 **방금 건드린 블록의 윤곽을 잠시 반짝이게 하는 클라이언트 전용 모드**입니다.
-중계기 단계를 잘못 바꿨을 때나 여러 상자를 연달아 확인할 때, 시청자가 조작한 위치를 따라올 수 있습니다.
+마인크래프트에서 **방금 건드린 블록의 윤곽을 잠시 반짝이게 하는 클라이언트 전용 모드**입니다.
+중계기 단계를 잘못 바꿨을 때나 여러 상자를 연달아 확인할 때, 플레이어가 방금 조작한 위치를 쉽게 확인할 수 있습니다.
 
-**[다운로드: Show Interaction 0.2.1](https://github.com/RUOK0214/Show_Interaction/releases/tag/v0.2.1)** · [문제 보고](https://github.com/RUOK0214/Show_Interaction/issues) · [MIT 라이선스](LICENSE)
+**[다운로드: Show Interaction 0.3.0](https://github.com/RUOK0214/Show_Interaction/releases/tag/v0.3.0)** · [문제 보고](https://github.com/RUOK0214/Show_Interaction/issues) · [MIT 라이선스](LICENSE)
 
-릴리스의 **Assets**에서 `show-interaction-0.2.1.jar`를 받으세요. `Source code`와 `-sources.jar`는 설치용이 아닙니다.
+릴리스의 **Assets**에서 `show-interaction-0.3.0.jar`를 받으세요. `Source code`와 `-sources.jar`는 설치용이 아닙니다.
 
-아래 선 두께·색 설정과 로그는 **개발 버전 0.3.0**에 추가된 기능입니다. 공개 릴리스 0.2.1에는 포함되지 않습니다.
+반응별 선 두께·색 설정과 상호작용 로그를 제공합니다.
 
 ## 실행 환경 및 설치
 
@@ -16,7 +16,7 @@
 - Fabric API **0.160.0+26.2** 또는 26.2용 호환 버전
 - Java **25 이상**
 
-Fabric으로 실행하는 게임 프로필의 `mods` 폴더에 **`show-interaction-0.2.1.jar`**와 Fabric API를 넣으세요.
+Fabric으로 실행하는 게임 프로필의 `mods` 폴더에 **`show-interaction-0.3.0.jar`**와 Fabric API를 넣으세요.
 `-sources.jar`는 개발용이며 설치 파일이 아닙니다. Forge/NeoForge, Bedrock, 다른 마인크래프트 버전은 지원하지 않습니다.
 업데이트할 때는 이전 Show Interaction JAR와 새 버전을 동시에 넣지 마세요.
 
@@ -108,7 +108,7 @@ Mod Menu에서는 **Show Interaction → 설정 버튼**으로 같은 설정창�
 반응 이름은 `PLACE`(설치), `BREAK`(제거), `ADJUST`(조절), `OPEN`(상자 열기), `INSPECT`(확인)입니다.
 색 기본값은 각각 `#73F59A`, `#FF7777`, `#FFD166`, `#63D9FF`, `#D4B1FF`입니다.
 0.1.0의 `durationSeconds`가 있으면 다섯 반응에 동일하게 옮겨 적용하며, 기존 켜기/끄기·색상·두께 설정은 보존합니다.
-0.2.1까지의 공통 `lineWidth`와 `placeColor` 등 색 항목도 반응별 설정으로 이전합니다. 이미 지정한 새 반응별 설정이 우선합니다.
+0.3.0까지의 공통 `lineWidth`와 `placeColor` 등 색 항목도 반응별 설정으로 이전합니다. 이미 지정한 새 반응별 설정이 우선합니다.
 잘못된 수치와 색상은 허용 범위 또는 기본값으로 처리합니다. 표식은 현재 월드에서만 유지되며 월드 이동/종료 시 초기화합니다.
 
 ## 빌드 및 검사
