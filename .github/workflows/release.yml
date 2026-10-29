@@ -1,0 +1,102 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate release version and source
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(sed -n 's/^mod_version=//p' gradle.properties | tr -d '\r')
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$GITHUB_REF_NAME" == "v$version" ]]
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          test -s "docs/releases/$version.md"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Build and verify distribution
+        run: bash ./gradlew prepareDistribution --no-daemon
+      - name: Stage release files and checksums
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/release
+          cp "build/libs/show-interaction-$VERSION.jar" build/release/
+          cp "build/libs/show-interaction-$VERSION-sources.jar" build/release/
+          cp "build/distributions/show-interaction-$VERSION-distribution.zip" build/release/
+          cp "build/distributions/show-interaction-$VERSION-distribution.zip.sha256" build/release/
+          (cd build/release && sha256sum *.jar *.zip *.sha256 > SHA256SUMS.txt)
+          cp "docs/releases/$VERSION.md" build/release/release-notes.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-files
+          path: build/release/*
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-files
+          path: release-files
+      - name: Upload, verify and publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ needs.build.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd release-files
+          sha256sum --check SHA256SUMS.txt
+          if gh release view "$TAG" --json isDraft > existing-release.json 2>/dev/null; then
+            jq -e '.isDraft == true' existing-release.json > /dev/null || {
+              echo 'The release is already public; refusing to replace its files.' >&2
+              exit 1
+            }
+          else
+            gh release create "$TAG" --verify-tag --draft \
+              --title "Show Interaction $VERSION — Minecraft 26.2 (Fabric)" \
+              --notes-file release-notes.md
+          fi
+          gh release upload "$TAG" --clobber \
+            "show-interaction-$VERSION.jar" \
+            "show-interaction-$VERSION-sources.jar" \
+            "show-interaction-$VERSION-distribution.zip" \
+            "show-interaction-$VERSION-distribution.zip.sha256" SHA256SUMS.txt
+          verify_dir=$(mktemp -d)
+          gh release download "$TAG" --dir "$verify_dir" --pattern '*'
+          [[ $(find "$verify_dir" -maxdepth 1 -type f | wc -l) -eq 5 ]]
+          cmp SHA256SUMS.txt "$verify_dir/SHA256SUMS.txt"
+          (cd "$verify_dir" && sha256sum --check SHA256SUMS.txt)
+          gh release edit "$TAG" --draft=false --latest --notes-file release-notes.md
+          gh release view "$TAG" --json url,isDraft,assets

@@ -1,0 +1,22 @@
+{
+  "modmenu.summaryTranslation.show_interaction": "Briefly highlights the block you just used.",
+  "modmenu.descriptionTranslation.show_interaction": "Colored outlines briefly highlight blocks you place, break, adjust, open or inspect. Follow your latest action when changing repeater delays or checking several containers.\n\nSettings: /showinteraction or the configuration button here.\nControl all highlights, transparency, and each reaction's visibility and duration.\n\nClient-side only. No server installation required.\nBy RUOK0214 · MIT license",
+  "screen.show_interaction.title": "Show Interaction · Settings",
+  "screen.show_interaction.global": "All highlights: %s",
+  "screen.show_interaction.transparency": "Transparency: %s%%",
+  "screen.show_interaction.transparency_hint": "0%: fully visible / 100%: invisible",
+  "screen.show_interaction.save_hint": "Save to apply. Esc cancels changes.",
+  "screen.show_interaction.save_failed": "Save failed. Check the config folder and retry.",
+  "screen.show_interaction.reaction": "Reaction",
+  "screen.show_interaction.enabled": "Show",
+  "screen.show_interaction.duration": "Duration",
+  "screen.show_interaction.seconds": "%ss",
+  "screen.show_interaction.duration_hint": "0.5–10 seconds, in 0.5 second steps",
+  "screen.show_interaction.open_duration_hint": "Visible while open; this duration starts after closing the container",
+  "screen.show_interaction.save": "Save and apply",
+  "screen.show_interaction.action.place": "Place",
+  "screen.show_interaction.action.break": "Break",
+  "screen.show_interaction.action.adjust": "Adjust",
+  "screen.show_interaction.action.open": "Open container",
+  "screen.show_interaction.action.inspect": "Inspect / pick"
+}

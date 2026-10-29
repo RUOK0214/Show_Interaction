@@ -1,0 +1,130 @@
+import groovy.json.JsonSlurper
+import java.security.MessageDigest
+import java.util.zip.ZipFile
+import javax.imageio.ImageIO
+
+// Packaging only: no upload, publishing plugin, GitHub Release or remote credentials.
+tasks.named('jar') {
+    from('LICENSE') { rename { 'LICENSE_show_interaction' } }
+    from('THIRD_PARTY_NOTICES.md')
+}
+tasks.named('sourcesJar') {
+    from('LICENSE')
+    from('THIRD_PARTY_NOTICES.md')
+}
+
+tasks.register('verifyDistribution') {
+    group = 'verification'
+    description = 'Checks the actual packaged metadata, translations, icon and license.'
+    dependsOn tasks.named('jar'), tasks.named('sourcesJar')
+    doLast {
+        def binary = tasks.named('jar').get().archiveFile.get().asFile
+        new ZipFile(binary).withCloseable { zip ->
+            def readText = { String path ->
+                def entry = zip.getEntry(path)
+                if (entry == null) throw new GradleException("Missing JAR entry: ${path}")
+                zip.getInputStream(entry).withCloseable { it.getText('UTF-8') }
+            }
+            def metadata = new JsonSlurper().parseText(readText('fabric.mod.json'))
+            assert metadata.id == 'show_interaction'
+            assert metadata.version == project.version.toString()
+            assert metadata.license == 'MIT'
+            assert metadata.environment == 'client'
+            assert metadata.depends.minecraft == project.minecraft_version
+            assert !metadata.depends.containsKey('modmenu')
+            assert metadata.entrypoints.modmenu == ['io.github.ruok0214.showinteraction.integration.ShowInteractionModMenu']
+            assert metadata.contact.sources == 'https://github.com/RUOK0214/Show_Interaction'
+            assert !metadata.containsKey('jars')
+            assert readText('LICENSE_show_interaction') == file('LICENSE').getText('UTF-8')
+            assert readText('THIRD_PARTY_NOTICES.md').contains('Gradle Wrapper')
+            def iconEntry = zip.getEntry(metadata.icon)
+            assert iconEntry != null
+            zip.getInputStream(iconEntry).withCloseable { input ->
+                def icon = ImageIO.read(input)
+                assert icon != null && icon.width == 256 && icon.height == 256
+            }
+            def languages = ['en_us', 'ko_kr'].collect { lang ->
+                new JsonSlurper().parseText(readText("assets/show_interaction/lang/${lang}.json"))
+            }
+            assert languages[0].keySet() == languages[1].keySet()
+            languages.each { language ->
+                assert language['modmenu.summaryTranslation.show_interaction']
+                assert language['modmenu.descriptionTranslation.show_interaction'].contains('/showinteraction')
+                assert !language.keySet().any { it.startsWith('key.') }
+            }
+            def paths = zip.entries().toList()*.name
+            assert !paths.any { it.endsWith('.jar') || it.startsWith('run/') || it.startsWith('config/') }
+            assert !paths.any { it.startsWith('com/terraformersmc/') || it.startsWith('net/minecraft/') }
+            assert paths.contains('io/github/ruok0214/showinteraction/integration/ShowInteractionModMenu.class')
+        }
+        new ZipFile(tasks.named('sourcesJar').get().archiveFile.get().asFile).withCloseable { zip ->
+            assert zip.getEntry('LICENSE') != null
+            assert zip.getEntry('THIRD_PARTY_NOTICES.md') != null
+        }
+        logger.lifecycle('Distribution checks passed: version, MIT license, optional Mod Menu, bilingual descriptions, icon and clean contents.')
+    }
+}
+tasks.named('check') { dependsOn tasks.named('verifyDistribution') }
+
+def stagingDirectory = layout.buildDirectory.dir("distribution/show-interaction-${project.version}")
+tasks.register('stageDistribution', Sync) {
+    dependsOn tasks.named('build')
+    into stagingDirectory
+    from(tasks.named('jar'))
+    from(tasks.named('sourcesJar')) { into 'developer' }
+    from('LICENSE', 'README.md', 'CHANGELOG.md', 'THIRD_PARTY_NOTICES.md')
+    from('docs/INSTALL.txt')
+    from('docs/VERIFICATION.md') { into 'docs' }
+}
+tasks.register('distributionChecksums') {
+    dependsOn tasks.named('stageDistribution')
+    doLast {
+        def directory = stagingDirectory.get().asFile
+        def files = fileTree(directory).matching { exclude 'SHA256SUMS.txt' }.files.sort { a, b ->
+            a.path <=> b.path
+        }
+        def lines = files.collect { artifact ->
+            def digest = MessageDigest.getInstance('SHA-256').digest(artifact.bytes).encodeHex().toString()
+            def relative = directory.toPath().relativize(artifact.toPath()).toString().replace('\\', '/')
+            "${digest}  ${relative}"
+        }
+        new File(directory, 'SHA256SUMS.txt').setText(lines.join('\n') + '\n', 'UTF-8')
+    }
+}
+tasks.register('distributionZip', Zip) {
+    dependsOn tasks.named('distributionChecksums')
+    from stagingDirectory
+    destinationDirectory = layout.buildDirectory.dir('distributions')
+    archiveFileName = "show-interaction-${project.version}-distribution.zip"
+}
+tasks.register('verifyDistributionArchive') {
+    dependsOn tasks.named('distributionZip')
+    doLast {
+        def archive = tasks.named('distributionZip').get().archiveFile.get().asFile
+        new ZipFile(archive).withCloseable { zip ->
+            def paths = zip.entries().toList().findAll { !it.directory }*.name
+            assert paths.contains(tasks.named('jar').get().archiveFileName.get())
+            assert paths.contains('developer/' + tasks.named('sourcesJar').get().archiveFileName.get())
+            assert paths.containsAll(['LICENSE', 'INSTALL.txt', 'CHANGELOG.md', 'README.md', 'THIRD_PARTY_NOTICES.md'])
+            def checksums = zip.getInputStream(zip.getEntry('SHA256SUMS.txt')).withCloseable { it.getText('UTF-8').readLines() }
+            assert checksums.size() == paths.size() - 1
+            checksums.each { line ->
+                def (expected, name) = line.split('  ', 2)
+                def entry = zip.getEntry(name)
+                assert entry != null
+                def actual = zip.getInputStream(entry).withCloseable { input ->
+                    MessageDigest.getInstance('SHA-256').digest(input.bytes).encodeHex().toString()
+                }
+                assert actual == expected : "Checksum mismatch for ${name}"
+            }
+        }
+        def digest = MessageDigest.getInstance('SHA-256').digest(archive.bytes).encodeHex().toString()
+        new File(archive.parentFile, archive.name + '.sha256').setText("${digest}  ${archive.name}\n", 'UTF-8')
+        logger.lifecycle('Distribution ZIP contents and all SHA-256 checksums verified.')
+    }
+}
+tasks.register('prepareDistribution') {
+    group = 'distribution'
+    description = 'Builds and verifies a local distribution ZIP. Does not publish anything.'
+    dependsOn tasks.named('verifyDistributionArchive')
+}
