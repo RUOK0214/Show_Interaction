@@ -10,8 +10,12 @@
 - Fabric API **0.160.0+26.2** 또는 26.2용 호환 버전
 - Java **25 이상**
 
-Fabric으로 실행하는 게임 프로필의 `mods` 폴더에 **`show-interaction-0.2.0.jar`**와 Fabric API를 넣으세요.
+Fabric으로 실행하는 게임 프로필의 `mods` 폴더에 **`show-interaction-0.2.1.jar`**와 Fabric API를 넣으세요.
 `-sources.jar`는 개발용이며 설치 파일이 아닙니다. Forge/NeoForge, Bedrock, 다른 마인크래프트 버전은 지원하지 않습니다.
+업데이트할 때는 이전 Show Interaction JAR와 새 버전을 동시에 넣지 마세요.
+
+[Mod Menu](https://modrinth.com/mod/modmenu) **20.0.2(26.2용)**를 선택적으로 설치하면 모드 목록에서 설명·아이콘·제작자·MIT 라이선스를 확인하고 설정 버튼을 사용할 수 있습니다.
+Mod Menu가 없어도 `/showinteraction` 명령어와 강조 기능은 작동합니다.
 
 서버에는 설치할 필요가 없습니다. 강조 표시는 모드를 설치한 플레이어의 화면에만 나타나며, 해당 화면을 캡처하는 방송·녹화에도 보입니다.
 다른 플레이어에게 표식을 전송하거나 블록의 실제 동작을 바꾸지 않습니다.
@@ -40,6 +44,7 @@ Fabric으로 실행하는 게임 프로필의 `mods` 폴더에 **`show-interacti
 ## 설정창
 
 채팅에 **`/showinteraction`**을 입력하면 설정창이 열립니다. 클라이언트 명령어라 서버 관리자 권한이나 치트 허용이 필요하지 않습니다. 전체 표시를 꺼도 이 명령어로 다시 켤 수 있습니다.
+Mod Menu에서는 **Show Interaction → 설정 버튼**으로 같은 설정창을 열 수 있습니다. 저장하거나 취소하면 모드 목록으로 돌아갑니다.
 
 | 항목 | 조절 방법 |
 | --- | --- |
@@ -83,10 +88,39 @@ Fabric으로 실행하는 게임 프로필의 `mods` 폴더에 **`show-interacti
 ```
 
 Linux/macOS에서는 `./gradlew build`와 `./gradlew runClient`를 사용하세요.
-설치 파일은 `build/libs/show-interaction-0.2.0.jar`에 생성됩니다.
+설치 파일은 `build/libs/show-interaction-0.2.1.jar`에 생성됩니다.
 빌드에는 표식 만료·재조작·최신 순서·최대 개수·상자 유지·초기화·반응별 시간·전체 및 개별 전환·투명도·설정 초안 분리·기존 시간 설정 이전 자동 검사가 포함됩니다.
 
 실제 게임에서 확인한 항목과 미확인 범위는 [검증 기록](docs/VERIFICATION.md)에 구분하여 기록했습니다.
+
+Mod Menu를 함께 테스트하려면 `gradlew.bat runClient -PwithModMenu`를 사용하세요.
+기본 개발 실행에는 Mod Menu가 추가되지 않으며, 배포 JAR에도 내장하지 않습니다.
+
+## 배포 파일 준비
+
+```powershell
+.\gradlew.bat prepareDistribution
+```
+
+검증을 통과한 파일이 `build/distributions/show-interaction-0.2.1-distribution.zip`으로 생성됩니다.
+설치용 JAR, 사용 안내, 변경 기록, 라이선스, 제3자 고지, 파일별 SHA-256 검증값과 개발용 소스 JAR가 포함됩니다.
+이 작업은 로컬 파일만 준비하며 게시·업로드·릴리스 생성을 하지 않습니다. 현재 공개 배포는 하지 않은 상태입니다.
+
+## 라이선스
+
+Copyright (c) 2026 RUOK0214. 이 프로젝트의 코드·문서·아이콘은 **[MIT 라이선스](LICENSE)**를 사용합니다.
+저작권 및 라이선스 고지를 유지하면 사용·수정·재배포·상업 이용이 가능합니다. 보증 조건을 포함한 전문은 LICENSE를 확인하세요.
+Gradle Wrapper와 별도 설치하는 의존성은 각자 라이선스를 따릅니다. [제3자 고지](THIRD_PARTY_NOTICES.md)를 참고하세요.
+
+이 모드는 Mojang/Microsoft의 공식 제품이 아니며, 해당 회사의 승인이나 제휴를 의미하지 않습니다.
+
+## 프로젝트와 문의
+
+- [프로젝트 소스](https://github.com/RUOK0214/Show_Interaction)
+- [문제 보고](https://github.com/RUOK0214/Show_Interaction/issues)
+- [변경 기록](CHANGELOG.md)
+
+현재 저장소는 비공개이므로 링크 접근은 저장소 권한이 있는 사용자로 제한됩니다.
 
 ## 범위 및 호환성
 

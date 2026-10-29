@@ -1,4 +1,6 @@
 {
+  "modmenu.summaryTranslation.show_interaction": "Briefly highlights the block you just used.",
+  "modmenu.descriptionTranslation.show_interaction": "Colored outlines briefly highlight blocks you place, break, adjust, open or inspect. Follow your latest action when changing repeater delays or checking several containers.\n\nSettings: /showinteraction or the configuration button here.\nControl all highlights, transparency, and each reaction's visibility and duration.\n\nClient-side only. No server installation required.\nBy RUOK0214 · MIT license",
   "screen.show_interaction.title": "Show Interaction · Settings",
   "screen.show_interaction.global": "All highlights: %s",
   "screen.show_interaction.transparency": "Transparency: %s%%",

@@ -13,9 +13,12 @@ jobs:
         with:
           distribution: temurin
           java-version: '25'
-      - name: Build and check
-        run: bash ./gradlew build --no-daemon
+      - name: Build, verify and prepare files (no publishing)
+        run: bash ./gradlew prepareDistribution --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: show-interaction
-          path: build/libs/show-interaction-*.jar
+          path: |
+            build/libs/show-interaction-*.jar
+            build/distributions/show-interaction-*-distribution.zip
+            build/distributions/show-interaction-*-distribution.zip.sha256

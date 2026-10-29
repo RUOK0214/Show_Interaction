@@ -3,11 +3,23 @@
   "id": "show_interaction",
   "version": "${version}",
   "name": "Show Interaction",
-  "description": "Briefly highlights blocks you place, break, adjust or open for viewers to follow your actions.",
+  "description": "See the block you just used. Brief colored outlines mark placing, breaking, adjusting and opening blocks. Configure with /showinteraction. Client-side only; no server installation needed.",
   "authors": ["RUOK0214"],
+  "license": "MIT",
+  "icon": "assets/show_interaction/icon.png",
+  "contact": {
+    "homepage": "https://github.com/RUOK0214/Show_Interaction",
+    "sources": "https://github.com/RUOK0214/Show_Interaction",
+    "issues": "https://github.com/RUOK0214/Show_Interaction/issues"
+  },
   "environment": "client",
-  "entrypoints": { "client": ["io.github.ruok0214.showinteraction.ShowInteractionClient"] },
+  "entrypoints": {
+    "client": ["io.github.ruok0214.showinteraction.ShowInteractionClient"],
+    "modmenu": ["io.github.ruok0214.showinteraction.integration.ShowInteractionModMenu"]
+  },
   "mixins": ["show_interaction.client.mixins.json"],
+  "suggests": { "modmenu": ">=20.0.2 <21" },
+  "custom": { "modmenu": { "update_checker": false } },
   "depends": {
     "fabricloader": ">=0.19.5",
     "minecraft": "26.2",

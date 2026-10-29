@@ -8,16 +8,20 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.gizmos.GizmoStyle;
 import net.minecraft.gizmos.Gizmos;
+import net.minecraft.client.gui.screens.Screen;
 
 import java.util.List;
 
 public final class ShowInteractionClient implements ClientModInitializer {
     public static InteractionTracker tracker;
+    private static ShowInteractionClient instance;
+    private HighlightConfig config;
     private volatile List<InteractionTracker.Outline> outlines = List.of();
     private boolean settingsRequested;
 
     @Override public void onInitializeClient() {
-        HighlightConfig config = HighlightConfig.load();
+        instance = this;
+        config = HighlightConfig.load();
         tracker = new InteractionTracker(config);
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->
                 dispatcher.register(ClientCommands.literal("showinteraction").executes(context -> {
@@ -29,10 +33,7 @@ public final class ShowInteractionClient implements ClientModInitializer {
             if (settingsRequested) {
                 settingsRequested = false;
                 if (client.level != null && client.player != null) {
-                    client.gui.setScreen(new InteractionSettingsScreen(config, () -> {
-                        tracker.clear();
-                        outlines = List.of();
-                    }));
+                    client.gui.setScreen(createSettingsScreen(null));
                 }
             }
             tracker.tick();
@@ -46,6 +47,13 @@ public final class ShowInteractionClient implements ClientModInitializer {
                     for (var box : outline.boxes()) Gizmos.cuboid(box, GizmoStyle.stroke(outline.color(), outline.width()));
                 }
             }
+        });
+    }
+
+    public static InteractionSettingsScreen createSettingsScreen(Screen parent) {
+        return new InteractionSettingsScreen(parent, instance.config, () -> {
+            tracker.clear();
+            instance.outlines = List.of();
         });
     }
 }

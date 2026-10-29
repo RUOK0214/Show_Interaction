@@ -16,11 +16,13 @@ public final class InteractionSettingsScreen extends Screen {
     private final HighlightConfig config;
     private final HighlightPreferences draft;
     private final Runnable onApplied;
+    private final Screen parent;
     private int left, top, panelWidth;
     private boolean saveFailed;
 
-    public InteractionSettingsScreen(HighlightConfig config, Runnable onApplied) {
+    public InteractionSettingsScreen(Screen parent, HighlightConfig config, Runnable onApplied) {
         super(Component.translatable("screen.show_interaction.title"));
+        this.parent = parent;
         this.config = config;
         this.draft = config.copy();
         this.onApplied = onApplied;
@@ -78,7 +80,7 @@ public final class InteractionSettingsScreen extends Screen {
         onClose();
     }
 
-    @Override public void onClose() { minecraft.gui.setScreen(null); }
+    @Override public void onClose() { minecraft.gui.setScreen(parent); }
 
     @Override public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         super.extractBackground(graphics, mouseX, mouseY, delta);

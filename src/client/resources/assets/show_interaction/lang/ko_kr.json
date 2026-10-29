@@ -1,4 +1,6 @@
 {
+  "modmenu.summaryTranslation.show_interaction": "방금 조작한 블록을 잠시 강조합니다.",
+  "modmenu.descriptionTranslation.show_interaction": "설치·제거·조절·상자 열기·확인한 블록에 색상 윤곽을 잠시 표시합니다. 중계기 단계를 바꾸거나 여러 상자를 확인할 때, 방금 조작한 위치를 쉽게 따라갈 수 있습니다.\n\n설정: /showinteraction 또는 이 화면의 설정 버튼\n전체 켜기/끄기, 투명도, 반응별 켜기/끄기와 표시 시간을 조절할 수 있습니다.\n\n클라이언트 전용 · 서버 설치 불필요\n제작: RUOK0214 · 라이선스: MIT",
   "screen.show_interaction.title": "Show Interaction · 블록 강조 설정",
   "screen.show_interaction.global": "전체 표시: %s",
   "screen.show_interaction.transparency": "투명도: %s%%",
