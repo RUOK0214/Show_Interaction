@@ -1,6 +1,6 @@
 # GitHub 배포 안내
 
-대상: **Show Interaction 0.2.1 / Minecraft Java 26.2 / Fabric**
+대상: **Show Interaction 0.3.0 (개발 중) / Minecraft Java 26.2 / Fabric**
 
 공개 GitHub 저장소의 [Releases](https://github.com/RUOK0214/Show_Interaction/releases)에서 배포합니다.
 일반 빌드와 PR 검사는 파일만 만들며, `v`로 시작하는 버전 태그를 푸시할 때만 별도의 Release 작업이 게시합니다.
@@ -19,7 +19,7 @@ Modrinth/CurseForge에는 게시하지 않습니다.
 | 선택 의존성 | Mod Menu 20.0.2, 26.2용 |
 | Java | 25 이상 |
 | 설정 진입 | `/showinteraction`, 또는 Mod Menu의 설정 버튼 |
-| 설치 파일 | `show-interaction-0.2.1.jar` |
+| 설치 파일 | `show-interaction-0.3.0.jar` |
 | 언어 | 한국어·영어 UI 및 Mod Menu 설명 |
 | 아이콘 | 직접 작성한 256×256 블록 윤곽 아이콘, 게임 이미지 미사용 |
 
@@ -35,7 +35,7 @@ Mod Menu가 설치되어 있을 때만 해당 설정 진입점을 사용합니�
 Show Interaction은 방금 조작한 블록에 색상 윤곽을 표시합니다. 중계기 단계를 바꿨을 때,
 여러 상자를 연달아 열 때, 블록을 설치하거나 제거할 때 시청자가 변화 지점을 따라가기 쉽습니다.
 설치·제거·조절·상자 열기·확인을 색으로 구분하며, 가장 최근 조작을 더 선명하게 보여 줍니다.
-`/showinteraction`에서 전체 표시, 투명도, 반응별 표시 여부와 시간을 조절할 수 있습니다.
+`/showinteraction`에서 전체 표시, 투명도, 반응별 표시 여부·시간·선 두께·색을 조절할 수 있습니다.
 Mod Menu를 설치하면 모드 목록에서도 설정을 열 수 있습니다. 서버에 설치할 필요는 없습니다.
 
 ### English
@@ -44,7 +44,7 @@ Mod Menu를 설치하면 모드 목록에서도 설정을 열 수 있습니다. 
 
 Show Interaction highlights recent block placement, removal, adjustments, container opening and inspection.
 Help viewers follow changes to repeater delays or see which chest you just checked. The latest interaction
-stands out, with configurable visibility, transparency and individual reaction durations.
+stands out, with configurable visibility, transparency, individual reaction durations, line widths and colors.
 Open settings with `/showinteraction` or the optional Mod Menu configuration button.
 Client-side only; no server installation required.
 

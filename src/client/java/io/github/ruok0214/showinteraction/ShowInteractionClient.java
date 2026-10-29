@@ -2,6 +2,8 @@ package io.github.ruok0214.showinteraction;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionEvents;
@@ -16,13 +18,17 @@ public final class ShowInteractionClient implements ClientModInitializer {
     public static InteractionTracker tracker;
     private static ShowInteractionClient instance;
     private HighlightConfig config;
+    private final InteractionLog log = new InteractionLog();
+    private InteractionLogStore logStore;
     private volatile List<InteractionTracker.Outline> outlines = List.of();
     private boolean settingsRequested;
 
     @Override public void onInitializeClient() {
         instance = this;
         config = HighlightConfig.load();
-        tracker = new InteractionTracker(config);
+        logStore = new InteractionLogStore(FabricLoader.getInstance().getConfigDir().resolve("show-interaction-log.json"), log);
+        tracker = new InteractionTracker(config, log);
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> logStore.close());
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->
                 dispatcher.register(ClientCommands.literal("showinteraction").executes(context -> {
                     // Chat closes after command execution; open on the next tick so it stays open.
@@ -37,6 +43,7 @@ public final class ShowInteractionClient implements ClientModInitializer {
                 }
             }
             tracker.tick();
+            logStore.tick();
             if (client.level == null) outlines = List.of();
         });
         // World reads stay on the extraction side; the renderer receives immutable geometry.
@@ -52,8 +59,12 @@ public final class ShowInteractionClient implements ClientModInitializer {
 
     public static InteractionSettingsScreen createSettingsScreen(Screen parent) {
         return new InteractionSettingsScreen(parent, instance.config, () -> {
-            tracker.clear();
+            tracker.clearHighlights();
             instance.outlines = List.of();
         });
+    }
+
+    static Screen createLogScreen(Screen parent) {
+        return new InteractionLogScreen(parent, instance.log, instance.logStore::failed);
     }
 }

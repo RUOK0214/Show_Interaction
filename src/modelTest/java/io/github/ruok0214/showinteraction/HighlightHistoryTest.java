@@ -3,7 +3,7 @@ package io.github.ruok0214.showinteraction;
 import static io.github.ruok0214.showinteraction.HighlightHistory.Action.*;
 
 public final class HighlightHistoryTest {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         var history = new HighlightHistory<String, String>(3);
         history.mark("repeater", "low shape", ADJUST, 100, 2500);
         var entry = history.snapshot(100).getFirst();
@@ -55,7 +55,80 @@ public final class HighlightHistoryTest {
         history.mark("long", "shape", BREAK, 36000, 500);
         check(history.snapshot(36500).isEmpty(), "New duration replaces previous duration at the same position");
         preferences();
-        System.out.println("Highlight checks passed: per-reaction timing, settings isolation, toggles, transparency, migration, expiry, recency, container hold and bounds.");
+        appearance();
+        configMigration();
+        InteractionLogTest.run();
+        System.out.println("Highlight checks passed: per-reaction timing/color/width, draft isolation, config migration/round trip, toggles, transparency, expiry, recency, container hold and bounds.");
+    }
+
+    private static void appearance() {
+        var prefs = new HighlightPreferences();
+        check(prefs.color(PLACE) == 0x73F59A && prefs.color(BREAK) == 0xFF7777, "Original default colors are unchanged");
+        var draft = prefs.copy();
+        draft.reactions.get(PLACE).color = "#112233";
+        draft.reactions.get(PLACE).lineWidth = 7.5f;
+        draft.reactions.get(BREAK).color = "#abcdef";
+        draft.reactions.get(BREAK).lineWidth = 1;
+        check(prefs.lineWidth(PLACE) == 3 && prefs.color(PLACE) == 0x73F59A, "Appearance drafts do not leak before saving");
+        prefs.copyFrom(draft);
+        check(prefs.lineWidth(PLACE) == 7.5f && prefs.color(PLACE) == 0x112233, "Place appearance applies independently");
+        check(prefs.lineWidth(BREAK) == 1 && prefs.color(BREAK) == 0xABCDEF, "Break appearance applies independently");
+        check(prefs.lineWidth(OPEN) == 3 && prefs.color(OPEN) == 0x63D9FF, "Other reactions remain unchanged");
+        check(prefs.reactions.get(BREAK).color.equals("#ABCDEF"), "Color representation is normalized");
+        draft.reactions.get(PLACE).color = "#000000";
+        draft.reactions.get(PLACE).lineWidth = 2;
+        check(prefs.color(PLACE) == 0x112233 && prefs.lineWidth(PLACE) == 7.5f, "Saved appearance does not share mutable draft rows");
+        var previous = prefs.copy();
+        prefs.copyFrom(draft);
+        prefs.copyFrom(previous);
+        check(prefs.color(PLACE) == 0x112233 && prefs.lineWidth(PLACE) == 7.5f, "Failed-save rollback restores appearance");
+        prefs.reactions.get(PLACE).lineWidth = Float.NaN;
+        prefs.reactions.get(BREAK).lineWidth = 100;
+        prefs.reactions.get(OPEN).lineWidth = -1;
+        prefs.reactions.get(PLACE).color = "#11223344";
+        prefs.reactions.get(BREAK).color = null;
+        prefs.reactions.get(OPEN).color = "#000000";
+        prefs.normalize();
+        check(prefs.lineWidth(PLACE) == 3 && prefs.lineWidth(BREAK) == 15 && prefs.lineWidth(OPEN) == 1, "Invalid widths are safe");
+        check(prefs.color(PLACE) == 0x73F59A && prefs.color(BREAK) == 0xFF7777 && prefs.color(OPEN) == 0, "Invalid colors recover per-action defaults; black stays valid");
+    }
+
+    private static void configMigration() {
+        var legacy = HighlightConfig.decode("""
+                {"durationSeconds":4.5,"lineWidth":5.5,"placeColor":"#123abc","breakColor":"#222222",
+                 "adjustColor":"#333333","openColor":"#444444","inspectColor":"#555555",
+                 "maxHighlights":128,"showWhenHudHidden":false}
+                """);
+        int[] colors = {0x123ABC, 0x222222, 0x333333, 0x444444, 0x555555};
+        for (var action : HighlightHistory.Action.values()) {
+            check(legacy.lineWidth(action) == 5.5f && legacy.durationMillis(action) == 4500, "0.1 common settings migrate to each action");
+            check(legacy.color(action) == colors[action.ordinal()], "Legacy action colors are preserved");
+        }
+        check(legacy.maxHighlights == 128 && !legacy.showWhenHudHidden, "Non-screen settings are preserved");
+        var partial = HighlightConfig.decode("""
+                {"enabled":false,"transparencyPercent":40,"lineWidth":6,"placeColor":"#112233","openColor":"#445566",
+                 "reactions":{"PLACE":{"enabled":false,"durationSeconds":7,"color":"#abcdef","lineWidth":2},
+                 "OPEN":{"durationSeconds":9},"BREAK":null}}
+                """);
+        check(!partial.enabled && partial.transparencyPercent == 40, "Global settings survive migration");
+        check(partial.lineWidth(PLACE) == 2 && partial.color(PLACE) == 0xABCDEF, "New per-action fields take precedence over legacy fields");
+        check(!partial.reactions.get(PLACE).enabled && partial.durationMillis(PLACE) == 7000, "Existing reaction toggles and times survive migration");
+        check(partial.lineWidth(OPEN) == 6 && partial.color(OPEN) == 0x445566 && partial.durationMillis(OPEN) == 9000, "0.2 rows inherit missing appearance without losing their time");
+        check(partial.lineWidth(BREAK) == 6 && partial.color(BREAK) == 0xFF7777, "Null legacy rows recover safely");
+        String saved = partial.encode();
+        check(!saved.contains("placeColor") && !saved.contains("openColor"), "New files have one source of truth for each color");
+        var restored = HighlightConfig.decode(saved);
+        for (var action : HighlightHistory.Action.values()) {
+            check(restored.color(action) == partial.color(action) && restored.lineWidth(action) == partial.lineWidth(action), "Appearance survives JSON save and reload");
+            check(restored.durationMillis(action) == partial.durationMillis(action)
+                    && restored.reactions.get(action).enabled == partial.reactions.get(action).enabled, "Time and enabled state survive JSON save and reload");
+        }
+        var invalid = HighlightConfig.decode("""
+                {"lineWidth":"invalid","placeColor":null,"openColor":"invalid",
+                 "reactions":{"PLACE":{"color":"#12345","lineWidth":999},"OPEN":{"lineWidth":-3}}}
+                """);
+        check(invalid.lineWidth(PLACE) == 15 && invalid.color(PLACE) == 0x73F59A, "Invalid new appearance is normalized");
+        check(invalid.lineWidth(OPEN) == 1 && invalid.color(OPEN) == 0x63D9FF && invalid.lineWidth(BREAK) == 3, "Invalid legacy values do not erase valid rows");
     }
 
     private static void preferences() {
