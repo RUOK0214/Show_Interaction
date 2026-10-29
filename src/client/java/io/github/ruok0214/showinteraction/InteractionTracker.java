@@ -44,7 +44,7 @@ public final class InteractionTracker {
 
     public InteractionTracker(HighlightConfig config) {
         this.config = config;
-        history = new HighlightHistory<>(config.maxHighlights, Math.round(config.durationSeconds * 1000));
+        history = new HighlightHistory<>(config.maxHighlights);
     }
 
     private static long now() { return System.nanoTime() / 1_000_000; }
@@ -84,6 +84,7 @@ public final class InteractionTracker {
         BlockSnapshot before = capture(pos);
         if (before == null) return null;
         activeUse = new UseAttempt(level, before, now());
+        pending.remove(pos);
         // An unrelated later click must not be mistaken for opening the previous chest.
         lastUse = null;
         return activeUse;
@@ -99,7 +100,8 @@ public final class InteractionTracker {
         if (!attempt.before.state().equals(after.state())) {
             mark(after, ADJUST);
         } else {
-            mark(after, INSPECT);
+            // Wait for a state/menu reply before choosing a category. Otherwise a disabled
+            // OPEN or ADJUST reaction would briefly appear as an enabled INSPECT reaction.
             pending.put(after.pos(), new Pending(attempt.before, now() + 1500));
             trim(pending);
         }
@@ -152,10 +154,12 @@ public final class InteractionTracker {
         if (lastUse != null && time - lastUse.time > 1500) lastUse = null;
         for (var iterator = pending.entrySet().iterator(); iterator.hasNext();) {
             var entry = iterator.next();
-            if (time >= entry.getValue().expires()) { iterator.remove(); continue; }
             BlockState current = level.getBlockState(entry.getKey());
             if (!current.equals(entry.getValue().before().state())) {
                 if (!current.isAir()) mark(capture(entry.getKey()), ADJUST);
+                iterator.remove();
+            } else if (time >= entry.getValue().expires()) {
+                mark(capture(entry.getKey()), INSPECT);
                 iterator.remove();
             }
         }
@@ -185,9 +189,10 @@ public final class InteractionTracker {
         List<Outline> result = new ArrayList<>();
         for (int i = 0; i < entries.size(); i++) {
             var entry = entries.get(i);
+            if (!config.allows(entry.action())) continue;
             if (mc.player.distanceToSqr(entry.key().getX() + 0.5, entry.key().getY() + 0.5, entry.key().getZ() + 0.5) > 4096) continue;
             boolean latest = i == entries.size() - 1;
-            int alpha = Math.round(255 * entry.opacity(time) * (latest ? 1f : 0.65f));
+            int alpha = Math.round(255 * entry.opacity(time) * config.opacityMultiplier() * (latest ? 1f : 0.65f));
             if (alpha == 0) continue;
             result.add(new Outline(entry.geometry(), (alpha << 24) | config.color(entry.action()), config.lineWidth * (latest ? 1f : 0.75f)));
         }
@@ -195,7 +200,9 @@ public final class InteractionTracker {
     }
 
     private void mark(BlockSnapshot snapshot, HighlightHistory.Action action) {
-        if (snapshot != null) history.mark(snapshot.pos(), snapshot.boxes(), action, now());
+        if (snapshot == null) return;
+        if (!config.allows(action)) { history.remove(snapshot.pos()); return; }
+        history.mark(snapshot.pos(), snapshot.boxes(), action, now(), config.durationMillis(action));
     }
     private void trim(LinkedHashMap<?, ?> map) {
         while (map.size() > config.maxHighlights) map.remove(map.keySet().iterator().next());

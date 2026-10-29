@@ -2,18 +2,19 @@ package io.github.ruok0214.showinteraction;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParser;
 import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.AtomicMoveNotSupportedException;
 
-public final class HighlightConfig {
+public final class HighlightConfig extends HighlightPreferences {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path FILE = FabricLoader.getInstance().getConfigDir().resolve("show-interaction.json");
-    public boolean enabled = true;
-    public double durationSeconds = 2.5;
     public int maxHighlights = 64;
     public float lineWidth = 3.0f;
     public boolean showWhenHudHidden = true;
@@ -30,10 +31,13 @@ public final class HighlightConfig {
             return config;
         }
         try (var reader = Files.newBufferedReader(FILE)) {
-            var config = GSON.fromJson(reader, HighlightConfig.class);
+            var json = JsonParser.parseReader(reader).getAsJsonObject();
+            var config = GSON.fromJson(json, HighlightConfig.class);
             if (config == null) throw new IOException("Empty config");
-            config.durationSeconds = Double.isFinite(config.durationSeconds)
-                    ? Math.clamp(config.durationSeconds, 0.5, 10.0) : 2.5;
+            config.normalize();
+            if (!json.has("reactions") && json.has("durationSeconds")) {
+                config.migrateDuration(json.get("durationSeconds").getAsDouble());
+            }
             config.maxHighlights = Math.clamp(config.maxHighlights, 1, 256);
             config.lineWidth = Float.isFinite(config.lineWidth) ? Math.clamp(config.lineWidth, 1.0f, 8.0f) : 3.0f;
             return config;
@@ -43,12 +47,23 @@ public final class HighlightConfig {
         }
     }
 
-    public void save() {
+    public boolean save() {
+        Path temporary = null;
         try {
             Files.createDirectories(FILE.getParent());
-            Files.writeString(FILE, GSON.toJson(this) + System.lineSeparator());
+            temporary = Files.createTempFile(FILE.getParent(), "show-interaction-", ".tmp");
+            Files.writeString(temporary, GSON.toJson(this) + System.lineSeparator());
+            try {
+                Files.move(temporary, FILE, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException ignored) {
+                Files.move(temporary, FILE, StandardCopyOption.REPLACE_EXISTING);
+            }
+            return true;
         } catch (IOException error) {
             LoggerFactory.getLogger("show_interaction").warn("Cannot save {}", FILE, error);
+            return false;
+        } finally {
+            if (temporary != null) try { Files.deleteIfExists(temporary); } catch (IOException ignored) { }
         }
     }
 

@@ -1,6 +1,20 @@
 {
-  "key.category.show_interaction.main": "Show Interaction · 블록 강조",
-  "key.show_interaction.toggle": "블록 강조 켜기/끄기",
-  "message.show_interaction.enabled": "블록 강조: 켜짐",
-  "message.show_interaction.disabled": "블록 강조: 꺼짐"
+  "screen.show_interaction.title": "Show Interaction · 블록 강조 설정",
+  "screen.show_interaction.global": "전체 표시: %s",
+  "screen.show_interaction.transparency": "투명도: %s%%",
+  "screen.show_interaction.transparency_hint": "0%: 선명하게 표시 / 100%: 완전히 투명",
+  "screen.show_interaction.save_hint": "저장하면 적용됩니다. Esc는 변경 취소",
+  "screen.show_interaction.save_failed": "저장 실패. 설정 폴더를 확인하고 다시 시도하세요",
+  "screen.show_interaction.reaction": "반응",
+  "screen.show_interaction.enabled": "표시",
+  "screen.show_interaction.duration": "표시 시간",
+  "screen.show_interaction.seconds": "%s초",
+  "screen.show_interaction.duration_hint": "0.5~10초 · 0.5초 단위로 조절",
+  "screen.show_interaction.open_duration_hint": "상자를 열어 둔 동안 유지하고, 닫은 뒤 이 시간만큼 표시",
+  "screen.show_interaction.save": "저장 후 적용",
+  "screen.show_interaction.action.place": "설치",
+  "screen.show_interaction.action.break": "제거",
+  "screen.show_interaction.action.adjust": "조절",
+  "screen.show_interaction.action.open": "상자 열기",
+  "screen.show_interaction.action.inspect": "확인 / 휠 클릭"
 }
