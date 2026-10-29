@@ -1,0 +1,6 @@
+{
+  "key.category.show_interaction.main": "Show Interaction · 블록 강조",
+  "key.show_interaction.toggle": "블록 강조 켜기/끄기",
+  "message.show_interaction.enabled": "블록 강조: 켜짐",
+  "message.show_interaction.disabled": "블록 강조: 꺼짐"
+}

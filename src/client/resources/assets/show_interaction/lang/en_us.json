@@ -1,0 +1,6 @@
+{
+  "key.category.show_interaction.main": "Show Interaction",
+  "key.show_interaction.toggle": "Toggle block highlights",
+  "message.show_interaction.enabled": "Block highlights: ON",
+  "message.show_interaction.disabled": "Block highlights: OFF"
+}
